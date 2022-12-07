@@ -20,6 +20,7 @@
 #endif
 #include "monitor.h"
 #include "fifo.h"
+using namespace std;
 //semafory
 Semaphore global(1), semProdEven(0),semProdOdd(0), semConsEven(0), semConsOdd(0);
 //zmienne globalne
@@ -59,11 +60,15 @@ class Buffer
     if(!canProcEven())
     {
       ++numOfProdEvenWaiting;
+      cout<<("ProcAddEven is waiting \n");
       global.v();
       semProdEven.p();
       --numOfProdEvenWaiting;
     }
     data.insert((rand()%100)*2);
+    cout<<("ProcAddEven done \n");
+    printf("FIFO --------------- Odd: %d, Even: %d \n", data.odd(), data.even());
+    sleep(400);
     if(numOfProdOddWaiting > 0 && canProcOdd())
       semProdOdd.v();
     else if (numOfConsEvenWaiting > 0 && canConsEven())
@@ -79,11 +84,14 @@ class Buffer
     if(!canProcOdd())
     {
       ++numOfProdOddWaiting;
+      cout<<("ProcAddOdd is waitnig \n");
       global.v();
       semProdOdd.p();
       --numOfProdOddWaiting;
     }
     data.insert((rand()%100)*2-1);
+    cout<<("ProcAddOdd done \n");
+    printf("FIFO --------------- Odd: %d, Even: %d \n", data.odd(), data.even());
     if (numOfConsEvenWaiting > 0 && canConsEven())
       semConsEven.v();
     else if (numOfConsOddWaiting > 0 && canConsOdd())
@@ -99,6 +107,7 @@ class Buffer
     if(!canConsEven())
     {
       ++numOfConsEvenWaiting;
+      cout<<("ConsPopEven is waiting \n");
       global.v();
       semConsEven.p();
       --numOfConsEvenWaiting;
@@ -116,6 +125,8 @@ class Buffer
         data.insert(temp);
       }
     }
+    cout<<("ConsPopEven done \n");
+    printf("FIFO --------------- Odd: %d, Even: %d \n", data.odd(), data.even());
     if (numOfConsOddWaiting > 0 && canConsOdd())
       semConsOdd.v();
     else if (numOfProdEvenWaiting > 0 && canProcOdd())
@@ -131,6 +142,8 @@ class Buffer
     if(!canConsOdd())
     {
       ++numOfConsOddWaiting;
+      cout<<("ConsPopOdd is waiting \n");
+
       global.v();
       semConsOdd.p();
       --numOfConsOddWaiting;
@@ -148,6 +161,9 @@ class Buffer
         data.insert(temp);
       }
     }
+    cout<<("ConsPopOdd done \n");
+    printf("FIFO --------------- Odd: %d, Even: %d \n", data.odd(), data.even());
+    sleep(100);
     if (numOfProdEvenWaiting > 0 && canProcOdd())
       semProdEven.v() ;
     else if (numOfProdOddWaiting > 0 && canProcOdd())
@@ -181,7 +197,7 @@ void* consEven(void *)
   while (true)
   {
     buffer.popEven();
-    sleep(rand()%2000+ConsTime);
+    sleep(rand()%3000+ConsTime);
   }
 }
 void* consOdd(void *)
@@ -189,7 +205,7 @@ void* consOdd(void *)
   while (true)
   {
     buffer.popOdd();
-    sleep(rand()%2000+ConsTime);
+    sleep(rand()%3000+ConsTime);
   }
 }
 int main(){
